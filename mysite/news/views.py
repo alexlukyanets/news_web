@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 
 from django.http import HttpResponse
 from .models import News, Category
@@ -50,10 +50,16 @@ def get_category(request, category_id):
     category = Category.objects.get(pk=category_id)
     return render(request, 'news/category.html', {'news': news, 'category': category})
 
-def view_news(request, news_id):
-    #news_item = News.objects.get(pk=news_id)
-    news_item = get_object_or_404(News, pk=news_id)
-    return render(request, 'news/view_news.html', {"news_item": news_item})
+class ViewNews(DetailView):
+    model = News
+    context_object_name = 'news_item'# Можно использовать без context_object_name, к данным можно обращаться через Objects
+    #template_name = 'news/news_detail.html'
+    #pk_url_kwarg = 'news_id'
+
+# def view_news(request, news_id):
+#     #news_item = News.objects.get(pk=news_id)
+#     news_item = get_object_or_404(News, pk=news_id)
+#     return render(request, 'news/view_news.html', {"news_item": news_item})
 
 def add_news(request):
     if request.method == 'POST':
