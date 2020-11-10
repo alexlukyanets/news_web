@@ -4,10 +4,11 @@ from django.urls import reverse_lazy
 from .utils import MyMixin
 from django.http import HttpResponse
 from .models import News, Category
-from .forms import NewsForm, UserRegisterFrom
+from .forms import NewsForm, UserRegisterFrom, UserLoginFrom
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.contrib import messages
+from django.contrib.auth import login, logout
 # Create your views here.
 
 def register(request):
@@ -15,9 +16,10 @@ def register(request):
         form = UserRegisterFrom(request.POST)
 
         if form.is_valid():
-            form.save()
             messages.success(request, 'Вы успешно заригестрированы!')
-            return redirect('login')
+            user = form.save()
+            login(request, user)
+            return redirect('home')
         else:
             messages.error(request, 'Ошибка регистрации')
     else:
@@ -25,8 +27,20 @@ def register(request):
 
     return render(request, 'news/register.html', {'form': form })
 
-def login(request):
-    return render(request, 'news/login.html')
+def user_login(request):
+    if request.method == "POST":
+        form = UserLoginFrom(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('home')
+    else:
+        form = UserLoginFrom()
+    return render(request, 'news/login.html', {'form':form})
+
+def user_logout(request):
+    logout(request)
+    return redirect('login')
 
 class HomeNews(MyMixin, ListView):
     model = News
