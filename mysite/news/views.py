@@ -1,26 +1,29 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
-
+from .utils import MyMixin
 from django.http import HttpResponse
 from .models import News, Category
 from .forms import NewsForm
-
+from django.contrib.auth.mixins import LoginRequiredMixin
 # Create your views here.
 
-class HomeNews(ListView):
+class HomeNews(MyMixin, ListView):
     model = News
     template_name = 'news/home_news_list.html'
     context_object_name = 'news'
+    mixin_prop = 'Hello World'
+
     #extra_context = {'title': 'Главная'}
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Главная страница'
+        context['title'] = self.get_upper('Главная страница')
+        context['mixin_prop'] = self.get_prop()
         return context
 
     def get_queryset(self):
-        return News.objects.filter(is_published=True)
+        return News.objects.filter(is_published=True).select_related('category')
 """
 def index(request):
     news = News.objects.all()
@@ -30,18 +33,18 @@ def index(request):
     return render(request, 'news/index.html', context=context)
 """
 
-class NewsByCategory(ListView):
+class NewsByCategory(MyMixin, ListView):
     model = News
     template_name = 'news/home_news_list.html'
     context_object_name = 'news'
     allow_empty = False# Не разрешаем показ пустых списков
 
     def get_queryset(self):
-        return News.objects.filter(category_id = self.kwargs['category_id'], is_published=True)
+        return News.objects.filter(category_id = self.kwargs['category_id'], is_published=True).select_related('category')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = Category.objects.get(pk=self.kwargs['category_id'])
+        context['title'] = self.get_upper(Category.objects.get(pk=self.kwargs['category_id']))
         return context
 
 
@@ -62,7 +65,7 @@ class ViewNews(DetailView):
 #     news_item = get_object_or_404(News, pk=news_id)
 #     return render(request, 'news/view_news.html', {"news_item": news_item})
 
-class CreateNews(CreateView):
+class CreateNews(LoginRequiredMixin, CreateView):
     # Если у класса  News есть get_absolute_url то он делает ссылку на которую делает редирект
     # Если нет то получим ошибку
 
@@ -72,6 +75,11 @@ class CreateNews(CreateView):
     # На основе именногованого адреса. Она строит ссылку передавая туда аргументы
     # Это синоним тега URL(в html) который используется в шаблонах
     # Только URL используется в шаблонах а reverse в коде(py)
+
+
+    #login_url = '/admin/'
+
+    raise_exception = True
 
     #Функцию reverse нельзя использовать №
     #success_url = reverse('home')

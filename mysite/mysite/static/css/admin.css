@@ -1,3 +1,8 @@
 #header {
     background: #66bb6a;
+    color: #fff;
+}
+
+#branding h1, #branding h1 a:link, #branding h1 a:visited{
+    color: #fff;
 }
