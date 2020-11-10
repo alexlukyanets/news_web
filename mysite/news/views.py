@@ -4,10 +4,29 @@ from django.urls import reverse_lazy
 from .utils import MyMixin
 from django.http import HttpResponse
 from .models import News, Category
-from .forms import NewsForm
+from .forms import NewsForm, UserRegisterFrom
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
+from django.contrib import messages
 # Create your views here.
+
+def register(request):
+    if request.method == 'POST':
+        form = UserRegisterFrom(request.POST)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Вы успешно заригестрированы!')
+            return redirect('login')
+        else:
+            messages.error(request, 'Ошибка регистрации')
+    else:
+        form = UserRegisterFrom()
+
+    return render(request, 'news/register.html', {'form': form })
+
+def login(request):
+    return render(request, 'news/login.html')
 
 class HomeNews(MyMixin, ListView):
     model = News
@@ -42,12 +61,7 @@ class NewsByCategory(MyMixin, ListView):
         context['title'] = self.get_upper(Category.objects.get(pk=self.kwargs['category_id']))
         return context
 
-def test(request):
-    objects = ['john1', 'paul2', 'george3', 'ringo4', 'john5', 'paul6', 'george7', 'ringo8']
-    paginator = Paginator(objects, 2)
-    page_num = request.GET.get('page', 1)# Если параметра page нет, то будет присвоена 1
-    page_objects = paginator.get_page(page_num)
-    return render(request, 'news/test.html', {'page_obj': page_objects})
+
 
 
 class ViewNews(DetailView):
@@ -76,6 +90,13 @@ class CreateNews(LoginRequiredMixin, CreateView):
     #success_url = reverse('home')
 
     #success_url = reverse_lazy('home')
+
+def test(request):
+    objects = ['john1', 'paul2', 'george3', 'ringo4', 'john5', 'paul6', 'george7', 'ringo8']
+    paginator = Paginator(objects, 2)
+    page_num = request.GET.get('page', 1)# Если параметра page нет, то будет присвоена 1
+    page_objects = paginator.get_page(page_num)
+    return render(request, 'news/test.html', {'page_obj': page_objects})
 
 def get_category(request, category_id):
     news = News.objects.filter(category_id=category_id)
