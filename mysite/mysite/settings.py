@@ -143,7 +143,7 @@ INTERNAL_IPS = ['127.0.0.1']
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'alexlukyanets18@gmail.com'
-EMAIL_HOST_PASSWORD = 'BetterThanYesturday1998'
+EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
