@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from .models import News, Category
 from .forms import NewsForm
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 # Create your views here.
 
 class HomeNews(MyMixin, ListView):
@@ -13,7 +14,7 @@ class HomeNews(MyMixin, ListView):
     template_name = 'news/home_news_list.html'
     context_object_name = 'news'
     mixin_prop = 'Hello World'
-
+    paginate_by = 2
     #extra_context = {'title': 'Главная'}
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -24,20 +25,14 @@ class HomeNews(MyMixin, ListView):
 
     def get_queryset(self):
         return News.objects.filter(is_published=True).select_related('category')
-"""
-def index(request):
-    news = News.objects.all()
-    context = {'news': news,
-               'title': 'Список Новостей',
-               }
-    return render(request, 'news/index.html', context=context)
-"""
+
 
 class NewsByCategory(MyMixin, ListView):
     model = News
     template_name = 'news/home_news_list.html'
     context_object_name = 'news'
     allow_empty = False# Не разрешаем показ пустых списков
+    paginate_by = 2
 
     def get_queryset(self):
         return News.objects.filter(category_id = self.kwargs['category_id'], is_published=True).select_related('category')
@@ -47,23 +42,19 @@ class NewsByCategory(MyMixin, ListView):
         context['title'] = self.get_upper(Category.objects.get(pk=self.kwargs['category_id']))
         return context
 
+def test(request):
+    objects = ['john1', 'paul2', 'george3', 'ringo4', 'john5', 'paul6', 'george7', 'ringo8']
+    paginator = Paginator(objects, 2)
+    page_num = request.GET.get('page', 1)# Если параметра page нет, то будет присвоена 1
+    page_objects = paginator.get_page(page_num)
+    return render(request, 'news/test.html', {'page_obj': page_objects})
 
-
-def get_category(request, category_id):
-    news = News.objects.filter(category_id=category_id)
-    category = Category.objects.get(pk=category_id)
-    return render(request, 'news/category.html', {'news': news, 'category': category})
 
 class ViewNews(DetailView):
     model = News
     context_object_name = 'news_item'# Можно использовать без context_object_name, к данным можно обращаться через Objects
     #template_name = 'news/news_detail.html'
     #pk_url_kwarg = 'news_id'
-
-# def view_news(request, news_id):
-#     #news_item = News.objects.get(pk=news_id)
-#     news_item = get_object_or_404(News, pk=news_id)
-#     return render(request, 'news/view_news.html', {"news_item": news_item})
 
 class CreateNews(LoginRequiredMixin, CreateView):
     # Если у класса  News есть get_absolute_url то он делает ссылку на которую делает редирект
@@ -85,6 +76,27 @@ class CreateNews(LoginRequiredMixin, CreateView):
     #success_url = reverse('home')
 
     #success_url = reverse_lazy('home')
+
+def get_category(request, category_id):
+    news = News.objects.filter(category_id=category_id)
+    category = Category.objects.get(pk=category_id)
+    return render(request, 'news/category.html', {'news': news, 'category': category})
+
+"""
+def index(request):
+    news = News.objects.all()
+    context = {'news': news,
+               'title': 'Список Новостей',
+               }
+    return render(request, 'news/index.html', context=context)
+"""
+
+# def view_news(request, news_id):
+#     #news_item = News.objects.get(pk=news_id)
+#     news_item = get_object_or_404(News, pk=news_id)
+#     return render(request, 'news/view_news.html', {"news_item": news_item})
+
+
 
 
 # def add_news(request):
