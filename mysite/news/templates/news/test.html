@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title%} Добавление Новости :: {{  block.super }}
+{% block title%} Обратная связь :: {{  block.super }}
 {% endblock %}
 
 {% block sidebar %}
@@ -9,10 +9,14 @@
 
 {% block content %}
 
-    <h1> Тестовая страница </h1>
+    <h1> Обратная связь  </h1>
+    <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
 
-    {% for name in page_obj.object_list %}
-    <p> {{name}}</p>
-    {% endfor %}
+    <button type="submit" class="btn btn-primary btn-block">Отправка</button>
+    </form>
+
+
 
 {% endblock %}
